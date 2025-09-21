@@ -1,124 +1,92 @@
+// --- Lógica para las flores de fondo que caen ---
 document.addEventListener('DOMContentLoaded', () => {
-    // --- Lógica para las flores de fondo ---
-    const container = document.querySelector('.flower-container');
+    const backgroundFlowerContainer = document.querySelector('.flower-container');
     const numberOfFlowers = 30;
 
     for (let i = 0; i < numberOfFlowers; i++) {
-        createBackgroundFlower();
-    }
-
-    function createBackgroundFlower() {
         const flower = document.createElement('div');
         flower.classList.add('flower');
+        flower.innerHTML = '🌼';
         
         flower.style.left = `${Math.random() * 100}vw`;
-
-        const duration = Math.random() * 7 + 8;
-        flower.style.animationDuration = `${duration}s`;
-
-        const delay = Math.random() * 5;
-        flower.style.animationDelay = `${delay}s`;
+        flower.style.animationDuration = `${Math.random() * 7 + 8}s`;
+        flower.style.animationDelay = `${Math.random() * 5}s`;
+        flower.style.fontSize = `${Math.random() * 20 + 20}px`;
         
-        const size = Math.random() * 20 + 20;
-        flower.style.fontSize = `${size}px`;
-        
-        flower.innerHTML = '🌼';
-
-        container.appendChild(flower);
+        backgroundFlowerContainer.appendChild(flower);
     }
+});
 
-    // --- Lógica para la flor 3D con Three.js ---
-    const flower3DContainer = document.getElementById('flower-3d-container');
-    if (flower3DContainer) {
-        // 1. Escena
-        const scene = new THREE.Scene();
-        scene.background = null; // Fondo transparente
 
-        // 2. Cámara
-        const camera = new THREE.PerspectiveCamera(75, flower3DContainer.offsetWidth / flower3DContainer.offsetHeight, 0.1, 1000);
-        camera.position.z = 2; // Acercamos la cámara
+// --- Lógica para la flor 3D interactiva ---
+const canvasContainer = document.getElementById('flower-3d-canvas');
 
-        // 3. Renderizador
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); // alpha: true para fondo transparente
-        renderer.setSize(flower3DContainer.offsetWidth, flower3DContainer.offsetHeight);
-        flower3DContainer.appendChild(renderer.domElement);
+// 1. Escena y Cámara
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, canvasContainer.clientWidth / canvasContainer.clientHeight, 0.1, 1000);
+camera.position.z = 5;
 
-        // Ajustar el tamaño del renderizador si el contenedor cambia de tamaño
-        window.addEventListener('resize', () => {
-            camera.aspect = flower3DContainer.offsetWidth / flower3DContainer.offsetHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(flower3DContainer.offsetWidth, flower3DContainer.offsetHeight);
-        });
+// 2. Renderizador (con fondo transparente)
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setSize(canvasContainer.clientWidth, canvasContainer.clientHeight);
+canvasContainer.appendChild(renderer.domElement);
 
-        // 4. Crear la Flor 3D (pétalos y centro)
-        const flowerGroup = new THREE.Group();
+// 3. Controles para girar la flor
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.enableZoom = false;
+controls.enablePan = false;
+controls.autoRotate = true; // La flor girará sola
+controls.autoRotateSpeed = 2.0;
 
-        // Material amarillo brillante para los pétalos
-        const petalMaterial = new THREE.MeshLambertMaterial({ color: 0xFFFF00, emissive: 0x999900 });
+// 4. Luces para que la flor se vea bien
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+scene.add(ambientLight);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+directionalLight.position.set(5, 10, 7.5);
+scene.add(directionalLight);
 
-        // Pétalos (usaremos formas planas y las rotaremos)
-        const petalShape = new THREE.Shape();
-        petalShape.moveTo(0, 0);
-        petalShape.quadraticCurveTo(0.1, 0.2, 0, 0.5);
-        petalShape.quadraticCurveTo(-0.1, 0.2, 0, 0);
+// 5. Creación de la Flor 3D (método más simple y seguro)
+const flowerGroup = new THREE.Group();
 
-        const extrudeSettings = {
-            steps: 1,
-            depth: 0.05,
-            bevelEnabled: true,
-            bevelThickness: 0.02,
-            bevelSize: 0.01,
-            bevelOffset: 0,
-            bevelSegments: 1
-        };
-        const petalGeometry = new THREE.ExtrudeGeometry(petalShape, extrudeSettings);
+// Materiales
+const petalMaterial = new THREE.MeshStandardMaterial({ color: 0xFFD700 }); // Amarillo dorado
+const centerMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 }); // Café para el centro
 
-        const numPetals = 8;
-        for (let i = 0; i < numPetals; i++) {
-            const petal = new THREE.Mesh(petalGeometry, petalMaterial);
-            petal.position.y = 0.25; // Posicionar el pétalo desde el centro
-            petal.rotation.z = (Math.PI * 2 / numPetals) * i; // Rotar alrededor del centro
-            petal.position.x = 0.1; // Alejar un poco del centro
-            flowerGroup.add(petal);
-        }
+// Geometría del pétalo (una elipse simple)
+const petalGeometry = new THREE.SphereGeometry(1.5, 32, 16, 0, Math.PI);
+petalGeometry.scale(0.5, 1, 0.1); // Aplastar la esfera para que parezca un pétalo
 
-        // Centro de la flor
-        const centerGeometry = new THREE.SphereGeometry(0.2, 32, 32);
-        const centerMaterial = new THREE.MeshLambertMaterial({ color: 0xFFD700 }); // Dorado
-        const flowerCenter = new THREE.Mesh(centerGeometry, centerMaterial);
-        flowerGroup.add(flowerCenter);
+// Crear y posicionar los pétalos
+const petalCount = 8;
+for (let i = 0; i < petalCount; i++) {
+    const petal = new THREE.Mesh(petalGeometry, petalMaterial);
+    const angle = (i / petalCount) * Math.PI * 2;
+    petal.position.x = Math.cos(angle) * 1.5;
+    petal.position.y = Math.sin(angle) * 1.5;
+    petal.rotation.z = angle + Math.PI / 2;
+    flowerGroup.add(petal);
+}
 
-        scene.add(flowerGroup);
+// Centro de la flor
+const centerGeometry = new THREE.SphereGeometry(0.8, 32, 16);
+const center = new THREE.Mesh(centerGeometry, centerMaterial);
+flowerGroup.add(center);
 
-        // 5. Luces (para que se vea el 3D)
-        const ambientLight = new THREE.AmbientLight(0x404040, 2); // Luz ambiental suave
-        scene.add(ambientLight);
+scene.add(flowerGroup);
 
-        const pointLight = new THREE.PointLight(0xffffff, 1); // Luz desde la cámara
-        pointLight.position.set(5, 5, 5);
-        scene.add(pointLight);
+// 6. Bucle de animación para renderizar todo
+function animate() {
+    requestAnimationFrame(animate);
+    controls.update(); // Actualiza los controles (para la rotación automática)
+    renderer.render(scene, camera);
+}
 
-        // 6. Controles de órbita para interactividad (arrastrar y girar)
-        const controls = new THREE.OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true; // Efecto de suavizado al girar
-        controls.dampingFactor = 0.05;
-        controls.screenSpacePanning = false;
-        controls.enableZoom = false; // Deshabilitar el zoom
-        controls.enablePan = false; // Deshabilitar el paneo
-        
-        // 7. Animación
-        function animate() {
-            requestAnimationFrame(animate);
+animate();
 
-            // Rotación automática de la flor si no se está interactuando
-            if (!controls.enabled || !controls.isRotating) { // Solo rota si los controles no están activos o no se está arrastrando
-                flowerGroup.rotation.y += 0.005;
-                flowerGroup.rotation.x += 0.002;
-            }
-            
-            controls.update(); // Actualiza los controles si el usuario está interactuando
-            renderer.render(scene, camera);
-        }
-        animate();
-    }
+// Ajustar el tamaño si la ventana cambia
+window.addEventListener('resize', () => {
+    camera.aspect = canvasContainer.clientWidth / canvasContainer.clientHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(canvasContainer.clientWidth, canvasContainer.clientHeight);
 });
