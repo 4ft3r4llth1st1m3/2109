@@ -1,7 +1,7 @@
 body {
     background: linear-gradient(to top, #fff1eb 0%, #ace0f9 100%);
     margin: 0;
-    overflow: hidden; /* Evita que aparezcan barras de scroll por las flores */
+    overflow: hidden;
     font-family: 'Georgia', serif;
     display: flex;
     justify-content: center;
@@ -18,7 +18,6 @@ body {
     text-align: center;
     z-index: 10;
     animation: fadeIn 2s ease-in-out;
-    position: relative; /* Necesario para posicionar el contenedor 3D si es necesario */
 }
 
 .card h1 {
@@ -32,10 +31,9 @@ body {
     font-size: 1.2em;
     line-height: 1.6;
     color: #555;
-    margin-bottom: 25px; /* Espacio para la flor 3D */
+    margin-bottom: 15px;
 }
 
-/* Contenedor de las flores */
 .flower-container {
     position: absolute;
     top: 0;
@@ -45,38 +43,33 @@ body {
     z-index: 1;
 }
 
-/* Estilo de cada flor de fondo */
 .flower {
     position: absolute;
-    top: -50px; /* Empiezan fuera de la pantalla */
-    font-size: 2em; /* Tamaño base de la flor */
+    top: -50px;
+    font-size: 2em;
     animation: fall linear infinite;
     filter: drop-shadow(0 0 2px rgba(0,0,0,0.2));
 }
 
-/* Contenedor de la flor 3D */
-#flower-3d-container {
-    width: 150px; /* Tamaño del lienzo 3D */
-    height: 150px;
-    margin: 20px auto 0 auto; /* Centrarlo y darle margen */
-    border-radius: 10px;
-    overflow: hidden; /* Asegura que la flor no se salga del contenedor */
-    cursor: grab; /* Indica que se puede arrastrar */
-    touch-action: none; /* Previene el comportamiento de desplazamiento en táctil */
+/* Contenedor para el lienzo de la flor 3D */
+#flower-3d-canvas {
+    width: 200px;
+    height: 200px;
+    margin: 0 auto;
+    cursor: grab;
+    touch-action: none;
 }
 
-/* Animación de la caída y rotación */
+#flower-3d-canvas:active {
+    cursor: grabbing;
+}
+
 @keyframes fall {
-    0% {
-        transform: translateY(0) rotate(0deg);
-    }
-    100% {
-        transform: translateY(100vh) rotate(360deg);
-        top: 100vh; /* Asegura que llegue al final */
+    to {
+        transform: translateY(105vh) rotate(360deg);
     }
 }
 
-/* Animación de entrada para la tarjeta */
 @keyframes fadeIn {
     from {
         opacity: 0;
