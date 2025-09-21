@@ -18,6 +18,7 @@ body {
     text-align: center;
     z-index: 10;
     animation: fadeIn 2s ease-in-out;
+    position: relative; /* Necesario para posicionar el contenedor 3D si es necesario */
 }
 
 .card h1 {
@@ -31,6 +32,7 @@ body {
     font-size: 1.2em;
     line-height: 1.6;
     color: #555;
+    margin-bottom: 25px; /* Espacio para la flor 3D */
 }
 
 /* Contenedor de las flores */
@@ -43,13 +45,24 @@ body {
     z-index: 1;
 }
 
-/* Estilo de cada flor */
+/* Estilo de cada flor de fondo */
 .flower {
     position: absolute;
     top: -50px; /* Empiezan fuera de la pantalla */
     font-size: 2em; /* Tamaño base de la flor */
     animation: fall linear infinite;
     filter: drop-shadow(0 0 2px rgba(0,0,0,0.2));
+}
+
+/* Contenedor de la flor 3D */
+#flower-3d-container {
+    width: 150px; /* Tamaño del lienzo 3D */
+    height: 150px;
+    margin: 20px auto 0 auto; /* Centrarlo y darle margen */
+    border-radius: 10px;
+    overflow: hidden; /* Asegura que la flor no se salga del contenedor */
+    cursor: grab; /* Indica que se puede arrastrar */
+    touch-action: none; /* Previene el comportamiento de desplazamiento en táctil */
 }
 
 /* Animación de la caída y rotación */
